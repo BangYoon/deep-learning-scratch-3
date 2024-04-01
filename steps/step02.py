@@ -1,3 +1,4 @@
+# 변수를 낳는 함수
 import numpy as np
 
 class Variable:

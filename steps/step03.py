@@ -1,3 +1,4 @@
+# 함수 연결
 import numpy as np
 
 class Variable:

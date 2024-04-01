@@ -1,3 +1,4 @@
+# 상자로서의 변수
 import numpy as np
 
 class Variable:
