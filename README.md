@@ -7,7 +7,7 @@
 - Implement the deep learning pipeline starting from a low level and gain insight into deep learning model design by understanding its structure.
 - Design an efficient learning process by understanding the operating principles of deep learning framework.
 
-</br>
+<br>
 
 ## Book Information
 [밑바닥부터 시작하는 딥러닝 3](https://product.kyobobook.co.kr/detail/S000001810323) 
@@ -17,12 +17,23 @@
 
 </br>
 
+## Requirements
+-	Python >= 3.3
+-	NumPy
+-	Matplotlib
+-	CuPy (option)
+-	Pillow (option)
+-	Graphviz
+
+</br>
+
 ## Progress
 [Parent repo](https://github.com/esjo93/dl-from-scratch)
 
 |date|4/8|4/15|4/22|4/29|5/13|5/20|
 |---|:---:|:---:|:---:|:---:|:---:|:---:|
 |steps|01 ~ 10||||||
+
 </br>
 
 
