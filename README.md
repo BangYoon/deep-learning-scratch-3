@@ -1,4 +1,4 @@
-# 📖 Study for Deep Learning from Scratch
+# 📖 Study on Deep Learning from Scratch
 > Started on March 27th, 2024 
 
 </br>
