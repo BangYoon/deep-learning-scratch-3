@@ -47,7 +47,7 @@ def f2(x):
 
 x = Variable(np.array(0.5))
 dy = numerical_diff(f2, x)
-print(dy)
+print(dy) #3.29744
 
 # 수치 미분의 단점 : 구현이 쉬우나, 막대한 계산량 -> 역전파 등장 (구현 복잡)
 

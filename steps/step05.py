@@ -7,7 +7,8 @@
     - dy/dx = dy/db * db/da * da/dx
 
 * 역전파 원리 도출
-    - dy/dx = dy/db * db/da * da/dx
+    - dy/dx = dy/dy * dy/db * db/da * da/dx
+            = dy/db * db/da * da/dx
             = dy/da * da/dx
             = dy/dx
     - 즉, 전부 y의 미분값 (= 역전파)
