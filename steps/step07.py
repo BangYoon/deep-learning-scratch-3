@@ -86,7 +86,9 @@ a.grad = B.backward(b.grad)
 A = a.creator
 x = A.input
 x.grad = A.backward(a.grad)
-print(x.grad) #similar with numerical_diff
+print(x.grad) #similar to numerical_diff
+
+# Variable 인스턴스의 creator == None 이면 역전파 중단됨
 
 
 
