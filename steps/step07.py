@@ -1,17 +1,30 @@
-# 수동 역전파
+# Auto back-propagation
+# if run forward-propagation, automatically run back-propagation
+
+# Define-by-Run : connect DL calculations when start running
+# Square > Exp > Square
 import numpy as np
 
 class Variable:
     def __init__(self, data):
         self.data = data
         self.grad = None # gradient = differential val
+        self.creator = None
+
+    def set_creator(self, func):
+        self.creator = func
 
 class Function:
      def __call__(self, input):
          x = input.data
          y = self.forward(x)
          output = Variable(y)
-         self.input = input # save the input
+
+         #output's creator == function
+         output.set_creator(self)
+         #save I/O
+         self.input = input
+         self.output = output
          return output
 
      def forward(self, x):
@@ -43,20 +56,39 @@ A = Square()
 B = Exp()
 C = Square()
 
-# 순전파
+# 순전파 forward-propagation
 x = Variable(np.array(0.5))
 a = A(x)
 b = B(a)
 y = C(b)
-print(y.data)
 
-# 역전파
-# ((e^x^2)^2)' = (e^(2x^2))' = 4x e^x^2
+# check Backwards.. in reverse order
+assert y.creator == C
+assert y.creator.input == b # call C > __call__ > save I/O
+assert y.creator.input.creator == B
+assert y.creator.input.creator.input == a
+assert y.creator.input.creator.input.creator == A
+assert y.creator.input.creator.input.creator.input == x
+
+# 역전파 back-propagation
 y.grad = np.array(1.0)
+# implement (b > C > y)
+C = y.creator
+b = C.input
 b.grad = C.backward(y.grad)
+
+# implement (a > B > b)
+B = b.creator
+a = B.input
 a.grad = B.backward(b.grad)
+
+# implement (x > A > a)
+A = a.creator
+x = A.input
 x.grad = A.backward(a.grad)
-print(x.grad) #3.29744 = step04 의 수치미분 값과 유사함
+print(x.grad) #similar with numerical_diff
+
+
 
 
 
