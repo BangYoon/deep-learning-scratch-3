@@ -1,4 +1,5 @@
-"""How to compute gradient
+""" 11. 가변 길이 인수(순전파)
+How to compute gradient
 1. numerical differentiation    : f（x+h）+f（x-h）/2h
 2. symbolic differentiation     : using math formula
 3. automatic differentiation    : using chain rule (1)forward mode (2)reverse mode
