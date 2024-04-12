@@ -42,7 +42,20 @@ class Variable:
         if self.grad is None:
             self.grad = np.ones_like(self.data)
 
-        funcs = [self.creator]
+        # 16.3 Add add_func() in Variable's backward()
+        funcs = []
+        seen_set = set()
+
+        # 중첨 함수: 두 조건 충족 시 적합
+        # 1. 속한 메서드 안에서만 사용한다.
+        # 2. 속한 메서드에 정의된 변수를 사용해야 한다.
+        def add_func(f): # TODO : Role as sorting funcs by generation
+            if f not in seen_set:
+                funcs.append(f)
+                seen_set.add(f)
+                funcs.sort(key=lambda x:x.generation)
+        add_func(self.creator)
+
         while funcs:
             f = funcs.pop()
             gys = [output.grad for output in f.outputs] # 1. Push grads into list
@@ -57,7 +70,8 @@ class Variable:
                 else:
                     x.grad = x.grad + gx
                 if x.creator is not None:
-                    funcs.append(x.creator)
+                    # funcs.append(x.creator)
+                    add_func(x.creator)
 
 class Function:
     def __call__(self, *inputs):
@@ -161,3 +175,10 @@ print([f.generation for f in funcs])
 
 f = funcs.pop()
 print(f.generation)
+
+x = Variable(np.array(2.0))
+a = square(x)
+y = add(square(a), square(a))
+y.backward()
+print(y.data)
+print(x.grad) # (2x^4)' = 8x^3
