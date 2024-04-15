@@ -179,3 +179,46 @@ y.backward()
 print(y.grad, t.grad)   # needless
 print(x0.grad, x1.grad) # only need
 
+
+# 18.5 mode transmition using "with"
+
+import contextlib
+"""
+ with open('sample.txt', 'w') as f:
+  f.write('hello world!!')
+
+@contextlib.contextmanager  # decorator - 문맥 판단하는 함수 
+def config_test():
+  print('start')  # 전처리
+  try:
+    yield     # with 블록 들어갈 때 전처리 실행, 블록 나올 때 후처리 실행됨 
+  finally:
+    print('done') # 후처리
+
+with config_test():
+  print('process...')
+"""
+
+@contextlib.contextmanager  
+def using_config(name, value):
+  old_value = getattr(Config, name)  # 전처리
+  setattr(Config, name, value)
+  try:
+    yield     # with 블록 들어갈 때 전처리 실행, 블록 나올 때 후처리 실행됨 
+  finally:
+    setattr(Config, name, old_value)
+
+"""
+with using_config('enable_backprop','False'):
+  # 이 안에서만 역전파 비활성 모드 - 순전파만 실행함  
+  x = Variable(np.array(2.0))
+  y = square(x)
+"""
+
+def no_grad(): # with using_config 매번 쓰기 귀찮으니까!! 
+  return using_config('enable_backprop', 'False')
+
+with no_grad():
+  x = Variable(np.array(2.0))
+  y = sqaure(x)
+
