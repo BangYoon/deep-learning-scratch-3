@@ -7,6 +7,8 @@ import weakref
 import numpy as np
 
 class Variable:
+    __array_priority__ = 200
+
     def __init__(self, data, name=None):
         if data is not None:
             if not isinstance(data, np.ndarray):
@@ -301,5 +303,12 @@ Variable.__rmul__ = mul
 
 x = Variable(np.array(2.0))
 y = 3.0 * x + 1.0
+print(y)
+
+# 21.4 좌항이 ndarray 인스턴스인 경우
+x = Variable(np.array([1.0]))
+y = np.array([2.0]) + x
+# call ndarray instance's __add__
+# want to call Variable intance's __radd__ => add __array_priority__
 print(y)
 
