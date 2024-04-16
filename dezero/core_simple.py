@@ -1,5 +1,3 @@
-# 22. operator overload (3) neg sub div pow
-
 import weakref
 import numpy as np
 import contextlib
@@ -151,19 +149,11 @@ class Mul(Function):
     x0, x1 = self.inputs[0].data, self.inputs[1].data
     return gy * x1, gy * x0
 
-class Square(Function):
+class Neg(Function):
     def forward(self, x):
-        return x ** 2
+        return -x
     def backward(self, gy):
-        x = self.inputs[0].data
-        return 2 * x * gy
-
-class Exp(Function):
-    def forward(self, x):
-        return np.exp(x)
-    def backward(self, gy):
-        x = self.inputs[0].data
-        return np.exp(x) * gy
+        return -gy
 
 class Sub(Function):
     def forward(self, x0, x1):
@@ -200,11 +190,8 @@ def mul(x0, x1):
     x1 = as_array(x1)
     return Mul()(x0, x1)
 
-def square(x):
-    return Square()(x)
-
-def exp(x):
-    return Exp()(x)
+def neg(x):
+    return Neg()(x)
 
 def sub(x0, x1):
     x1 = as_array(x1)
@@ -224,56 +211,15 @@ def pow(x, c):
     return Pow(c)(x)
 
 
-Variable.__add__ = add
-Variable.__radd__ = add
-Variable.__mul__ = mul
-Variable.__rmul__ = mul # 첫 번째 인수가 float/int 인 경우
-Variable.__sub__ = sub
-Variable.__rsub__ = rsub
-Variable.__truediv__ = div
-Variable.__rtruediv__ = rdiv
-Variable.__pow__ = pow
+def setup_variable():
+    Variable.__add__ = add
+    Variable.__radd__ = add
+    Variable.__mul__ = mul
+    Variable.__rmul__ = mul # 첫 번째 인수가 float/int 인 경우
+    Variable.__neg__ = neg
+    Variable.__sub__ = sub
+    Variable.__rsub__ = rsub
+    Variable.__truediv__ = div
+    Variable.__rtruediv__ = rdiv
+    Variable.__pow__ = pow
 
-generations = [2,0,1,4,2]
-funcs = []
-for g in generations:
-    f = Function() # dump func
-    f.generation = g
-    funcs.append(f)
-
-print([f.generation for f in funcs], end=' -> ')
-funcs.sort(key=lambda x:x.generation)
-print([f.generation for f in funcs])
-f = funcs.pop()
-print(f.generation) # 4
-
-x = Variable(np.array(2.0))
-a = square(x)
-y = add(square(a), square(a))
-y.backward()
-print(y.data)
-print(x.grad) # (2x^4)' = 8x^3
-
-# 18.1 delete needless gradients
-x0 = Variable(np.array(1.0))
-x1 = Variable(np.array(1.0))
-t = add(x0, x1)
-y = add(x0, t)
-y.backward()
-print(y.grad, t.grad)   # needless
-print(x0.grad, x1.grad) # only need
-
-with no_grad():
-  x = Variable(np.array(2.0))
-  y = square(x)
-
-# 21.4 좌항이 ndarray 인스턴스인 경우
-x = Variable(np.array([1.0]))
-y = np.array([2.0]) + x
-# call ndarray instance's __add__
-# want to call Variable intance's __radd__ => add __array_priority__
-print(y)
-
-x = Variable(np.array(2.0))
-y = x**3
-print(y)
