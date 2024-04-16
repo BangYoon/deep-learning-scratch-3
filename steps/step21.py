@@ -1,5 +1,7 @@
-# 20. operator overload (1) 
-# mul() -> * / add() -> +   
+# 21. operator overload (2)
+# 21.1 as_variable
+# 21.2 float, int
+# 21.3 __rmul__, __radd__
 
 import weakref
 import numpy as np
@@ -10,16 +12,15 @@ class Variable:
             if not isinstance(data, np.ndarray):
                 raise TypeError('{} type is not allowed.'.format(type(data)))
         self.data = data
-        # 19.1 변수 이름 지정 
         self.name = name
         self.grad = None
         self.creator = None
-        self.generation = 0     # Add generation
+        self.generation = 0
 
     def __len__(self):
       return len(self.data)
 
-    # 객체를 문자열로 representation 
+    # 객체를 문자열로 representation
     def __repr__(self):
       if self.data is None:
         return 'variable(None)'
@@ -30,10 +31,10 @@ class Variable:
         self.creator = func
         self.generation = func.generation + 1   # parent func's gen + 1
 
-    def __mul__(self, other):
-      return mul(self, other) 
+    # def __mul__(self, other):
+    #   return mul(self, other)
 
-    @property # shape method 를 인스턴스 변수처럼 사용할 수 있음 
+    @property # shape method 를 인스턴스 변수처럼 사용할 수 있음
     def shape(self):
       return self.data.shape
 
@@ -87,6 +88,7 @@ class Variable:
 
 class Function:
     def __call__(self, *inputs):
+        inputs = [as_variable(x) for x in inputs]
         xs = [x.data for x in inputs]
         ys = self.forward(*xs)
         if not isinstance(ys, tuple):    # if not tuple, make tuple
@@ -96,7 +98,7 @@ class Function:
         if Config.enable_backprop:
             self.generation = max([x.generation for x in inputs])   # 1. 역전파 모드에서만 세대 필요함
             for output in outputs:
-                output.set_creator(self)    # 2. 계산들의 연결도 역전파 모드에서만 필요함 
+                output.set_creator(self)    # 2. 계산들의 연결도 역전파 모드에서만 필요함
             self.inputs = inputs    # inputs cnt=1
             self.outputs = [weakref.ref(output) for output in outputs]
         return outputs if len(outputs) > 1 else outputs[0]
@@ -116,7 +118,12 @@ def as_array(y):
         return np.array(y)
     return y
 
-# 20.1 Mul
+def as_variable(obj):
+    if isinstance(obj, Variable):
+        return obj
+    return Variable(obj)
+
+
 class Mul(Function):
   def forward(self, x0, x1):
     return x0 * x1
@@ -142,7 +149,8 @@ class Exp(Function):
         return np.exp(x) * gy
 
 def mul(x0, x1):
-  return Mul()(x0, x1)
+    x1 = as_array(x1)
+    return Mul()(x0, x1)
 
 def square(x): # simplifying method 1
     return Square()(x)
@@ -163,8 +171,9 @@ class Add(Function):
     def backward(self, gy):
         return gy, gy       # partial derivative -> TOOD : fix Variable backward()
 
-def add(*xs):
-    return Add()(*xs)
+def add(x0, x1):
+    x1 = as_array(x1)
+    return Add()(x0, x1)
 
 
 x0 = Variable(np.array(2.0))
@@ -223,30 +232,13 @@ print(x0.grad, x1.grad) # only need
 
 
 # 18.5 mode transmition using "with"
-
 import contextlib
-"""
- with open('sample.txt', 'w') as f:
-  f.write('hello world!!')
-
-@contextlib.contextmanager  # decorator - 문맥 판단하는 함수 
-def config_test():
-  print('start')  # 전처리
-  try:
-    yield     # with 블록 들어갈 때 전처리 실행, 블록 나올 때 후처리 실행됨 
-  finally:
-    print('done') # 후처리
-
-with config_test():
-  print('process...')
-"""
-
-@contextlib.contextmanager  
+@contextlib.contextmanager
 def using_config(name, value):
   old_value = getattr(Config, name)  # 전처리
   setattr(Config, name, value)
   try:
-    yield     # with 블록 들어갈 때 전처리 실행, 블록 나올 때 후처리 실행됨 
+    yield     # with 블록 들어갈 때 전처리 실행, 블록 나올 때 후처리 실행됨
   finally:
     setattr(Config, name, old_value)
 
@@ -257,7 +249,7 @@ with using_config('enable_backprop','False'):
   y = square(x)
 """
 
-def no_grad(): # with using_config 매번 쓰기 귀찮으니까!! 
+def no_grad(): # with using_config 매번 쓰기 귀찮으니까!!
   return using_config('enable_backprop', 'False')
 
 with no_grad():
@@ -267,7 +259,7 @@ with no_grad():
 
 # 19.
 x = Variable(np.array(([[1,2,3],[4,5,6]])))
-print(x.shape) #shape() 대신 shape 
+print(x.shape) #shape() 대신 shape
 print(len(x))
 print(x)
 
@@ -284,13 +276,10 @@ print(a.grad, b.grad) # 2.0 3.0
 print(c.grad) # 1.0
 print(y.grad) # None
 
-y = a * b
-print(y) 
 
-
-# 20. operator overload 다른 방식 
+# 20. operator overload 다른 방식
 Variable.__mul__ = mul
-Variable.__add__ = add 
+Variable.__add__ = add
 
 a = Variable(np.array(3.0))
 b = Variable(np.array(2.0))
@@ -300,11 +289,17 @@ y.backward()
 print(y)
 print(a.grad, b.grad)
 
+# 21.1
+x = Variable(np.array(2.0))
+y = x + np.array(3.0)
+print(y)
 
+# 21.3 첫 번째 인수가 float or int 인 경우
+#y = 2.0 * x     # typeerror : x 오른쪽에 있으므로 __rmul__ 필요
+Variable.__radd__ = add
+Variable.__rmul__ = mul
 
-
-
-
-
-
+x = Variable(np.array(2.0))
+y = 3.0 * x + 1.0
+print(y)
 
