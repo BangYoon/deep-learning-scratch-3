@@ -1,5 +1,5 @@
 
-if_simple_core = True
+if_simple_core = False
 
 if if_simple_core:
     from dezero.core_simple import Variable

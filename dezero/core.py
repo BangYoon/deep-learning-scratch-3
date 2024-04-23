@@ -68,7 +68,7 @@ class Variable:
     def backward(self, retain_grad=False, create_graph=False):
         if self.grad is None:
             # self.grad = np.ones_like(self.data)
-            self.grad = Variable(np.ones_life(self.data))
+            self.grad = Variable(np.ones_like(self.data))
 
         funcs = []
         seen_set = set()
@@ -183,7 +183,7 @@ class Pow(Function):
         return x ** self.c
     def backward(self, gy):
         # x = self.inputs[0].data
-        x = self.inputs
+        x, = self.inputs
         c = self.c
         gx = c * x ** (c-1) * gy
         return gx
