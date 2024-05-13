@@ -41,6 +41,17 @@ class Tanh(Function):
 def tanh(x):
     return Tanh()(x)
 
+class Exp(Function):
+    def forward(self, x):
+        return np.exp(x)
+    def backward(self, gy):
+        # x = self.input.data
+        x = self.inputs[0].data
+        return np.exp(x) * gy
+
+def exp(x):
+    return Exp()(x)
+
 class Reshape(Function):
     def __init__(self, shape):
         self.shape = shape
@@ -146,3 +157,20 @@ class MeanSquaredError(Function):
 
 def mean_squared_error(x0, x1):
     return MeanSquaredError()(x0, x1)
+
+# x * W (matmul) -> + b -> y
+def linear_simple(x, W, b=None):
+    t = matmul(x, W)
+    if b is None:
+        return t
+
+    y = t + b
+    t.data = None # t의 데이터 삭제
+    return y
+
+# 43.3 activation func - ReLU & Sigmoid func
+def sigmoid_simple(x):
+    x = as_variable(x)
+    y = 1 / (1 + exp(-x))
+    return y
+
