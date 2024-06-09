@@ -2,13 +2,14 @@ import weakref
 import numpy as np
 import dezero.functions as F
 from dezero.core import Parameter
+from dezero import cuda
 
 class Layer:
     def __init__(self):
         self._params = set()
 
     def __setattr__(self, name, value): #인스턴스 변수 설정 시 called
-        if isinstance(value, Parameter): # Parameter 은 Variable 상속
+        if isinstance(value, (Parameter, Layer)): # Parameter 은 Variable 상속
             self._params.add(name)
         super().__setattr__(name, value)
 
@@ -25,7 +26,12 @@ class Layer:
 
     def params(self):
         for name in self._params:
-            yield self.__dict__[name]
+            obj = self.__dict__[name]
+
+            if isinstance(obj, Layer):
+                yield from obj.params()
+            else:
+                yield obj
 
     def cleargrads(self):
         for param in self.params():
@@ -38,6 +44,7 @@ class Layer:
 
 
 # 선형 변환 클래스
+"""
 class Linear_origin(Layer):  #입력 크기, 출력 크기
     def __init__(self, in_size, out_size, nobias=False, dtype=np.float32):
         super().__init__()
@@ -53,7 +60,7 @@ class Linear_origin(Layer):  #입력 크기, 출력 크기
     def forward(self, x): # 선형 변환 구현
         y = F.linear(x, self.W, self.b)
         return y
-
+"""
 
 class Linear(Layer):  #가중치를 나중에 (forward)에 생성함으로써 입력 크기 in_size를 자동으로 결정하기
     def __init__(self, out_size, nobias=False, dtype=np.float32, in_size=None):
@@ -70,11 +77,12 @@ class Linear(Layer):  #가중치를 나중에 (forward)에 생성함으로써 �
         if nobias:
             self.b = None
         else:
-            self.b = Parameter(np.zeros(0, dtype=dtype), name='b') # 편향
+            self.b = Parameter(np.zeros(out_size, dtype=dtype), name='b') # 편향
 
     def _init_W(self):
         I, O = self.in_size, self.out_size
-        self.W = np.random.randn(I, O).astype(self.dtype) * np.sqrt(1 / I)  # 가중치 초기값은 무작위로 설정해야 함
+        W_data = np.random.randn(I, O).astype(self.dtype) * np.sqrt(1 / I)
+        self.W.data = W_data
 
     def forward(self, x): # 선형 변환 구현
         # data를 흘려보내는 시점에 가중치 초기화
@@ -82,5 +90,6 @@ class Linear(Layer):  #가중치를 나중에 (forward)에 생성함으로써 �
             self.in_size = x.shape[1]
             self._init_W()
 
-        y = F.linear(x, self.W, self.b)
+        y = F.linear_simple(x, self.W, self.b)
         return y
+
