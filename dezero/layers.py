@@ -26,10 +26,10 @@ class Layer:
 
     def params(self):
         for name in self._params:
-            obj = self.__dict__[name]
+            obj = self.__dict__[name] # _params 에서 name(string) 꺼내고 그 name에 해당하는 객체를 obj로 꺼냄
 
-            if isinstance(obj, Layer):
-                yield from obj.params()
+            if isinstance(obj, Layer):  # obj가 Layer 인스턴스면
+                yield from obj.params() # obj.params 호출 -> Layer 속 Layer 재귀적으로 꺼낼 수 있음
             else:
                 yield obj
 
