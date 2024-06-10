@@ -205,3 +205,34 @@ class Sigmoid(Function):
 
 def sigmoid(x):
     return Sigmoid()(x)
+
+class Log(Function):
+    def forward(self, x):
+        xp = cuda.get_array_module(x)
+        y = xp.log(x)
+        return y
+
+    def backward(self, gy):
+        x, = self.inputs
+        gx = gy / x
+        return gx
+
+def log(x):
+    return Log()(x)
+
+def softmax_simple(x, axis=1):
+    x = as_variable(x)
+    y = exp(x)
+    sum_y = sum(y, axis=axis, keepdims=True)
+    return y / sum_y
+
+def softmax_cross_entropy_simple(x, t):     # x는 softmax 적용 전, t는 정답 데이터
+    x, t = as_variable(x), as_variable(t)
+    N = x.shape[0]
+
+    p = softmax_simple(x)
+    p = np.clip(p, 1e-15, 1.0)
+    log_p = log(p)
+    tlog_p = log_p[np.arange(N), t.data]    # log_p[0, t.data[0]], log_p[1, t.data[1]], ...
+    y = -1 * sum(tlog_p) / N
+    return y
