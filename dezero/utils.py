@@ -1,5 +1,6 @@
 import os
 import subprocess
+from dezero import cuda
 
 def _dot_var(v, verbose=False):
     dot_var = '{} [label="{}", color=orange, style=filled]\n'
