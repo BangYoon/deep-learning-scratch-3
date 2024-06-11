@@ -229,10 +229,29 @@ def softmax_simple(x, axis=1):
 def softmax_cross_entropy_simple(x, t):     # x는 softmax 적용 전, t는 정답 데이터
     x, t = as_variable(x), as_variable(t)
     N = x.shape[0]
-
     p = softmax_simple(x)
-    p = np.clip(p, 1e-15, 1.0)
+    p = clip(p, 1e-15, 1.0)
     log_p = log(p)
-    tlog_p = log_p[np.arange(N), t.data]    # log_p[0, t.data[0]], log_p[1, t.data[1]], ...
+    print(log_p.data)
+    tlog_p = log_p.data[np.arange(N), t.data]    # log_p[0, t.data[0]], log_p[1, t.data[1]], ...
     y = -1 * sum(tlog_p) / N
     return y
+
+class Clip(Function):
+    def __init__(self, x_min, x_max):
+        self.x_min = x_min
+        self.x_max = x_max
+
+    def forward(self, x):
+        xp = cuda.get_array_module(x)
+        y = xp.clip(x, self.x_min, self.x_max)
+        return y
+
+    def backward(self, gy):
+        x, = self.inputs
+        mask = (x.data >= self.x_min) * (x.data <= self.x_max)
+        gx = gy * mask
+        return gx
+
+def clip(x, x_min, x_max):
+    return Clip(x_min, x_max)(x)
