@@ -21,5 +21,6 @@ else:
     from dezero.models import Model
     from dezero.models import MLP
     from dezero.datasets import get_spiral
+    from dezero.dataloaders import DataLoader
 
 setup_variable()

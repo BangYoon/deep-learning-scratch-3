@@ -50,7 +50,7 @@ class MomentumSGD(Optimizer):
         if v_key not in self.vs:
             self.vs[v_key] = np.zeros_like(param.data)
 
-        v = self.vs[v_key]
-        v *= self.momentum
+        v = self.vs[v_key] # v=속도
+        v *= self.momentum # momentum=가속도 관한 값 (보통 0.9 로 해서 서서히 속도 감속시킴)
         v -= self.lr * param.grad.data
         param.data += v
