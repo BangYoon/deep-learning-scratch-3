@@ -74,12 +74,12 @@ train_set = dezero.datasets.Spiral(transform=f)
 # 입력 데이터 전처리 예시 2
 from dezero import transforms
 f = transforms.Normalize(mean=0.0, std=2.0)
-train_set = dezero.datasets.Spiral(transforms=f)
+train_set = dezero.datasets.Spiral(transform=f)
 
 # 여러 전처리 연달아 수행 가능!
 f = transforms.Compose([transforms.Normalize(mean=0.0, std=2.0),
                         transforms.AsType(np.float64)])
-train_set = dezero.datasets.Spiral(transforms=f)
+train_set = dezero.datasets.Spiral(transform=f)
 
 
 
