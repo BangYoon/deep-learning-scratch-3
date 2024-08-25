@@ -1,11 +1,12 @@
 import numpy as np
+# from dezero.core import Variable
+
 gpu_enable = True
 try:
     import cupy as cp 
     cupy = cp
 except ImportError:
     gpu_enable = False
-from dezero import Variable
 
 
 def get_array_module(x):
@@ -18,6 +19,7 @@ def get_array_module(x):
     Returns:
         module: `cupy` or `numpy` is returned based on the argument.
     """
+    from dezero.core import Variable
     if isinstance(x, Variable):
         x = x.data
 

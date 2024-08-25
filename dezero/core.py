@@ -2,6 +2,7 @@ import weakref
 import numpy as np
 import contextlib
 import dezero
+import dezero.cuda
 
 
 class Config:
@@ -20,12 +21,19 @@ def no_grad():
   return using_config('enable_backprop', 'False')
 
 
+try:
+    import cupy
+    array_types = (np.ndarray, cupy.ndarray)
+except ImportError:
+    array_types = (np.ndarray)
+    
+
 class Variable:
     __array_priority__ = 200
 
     def __init__(self, data, name=None):
         if data is not None:
-            if not isinstance(data, np.ndarray):
+            if not isinstance(data, np.ndarray): #array_types
                 raise TypeError('{} type is not allowed.'.format(type(data)))
 
         self.data = data
@@ -84,7 +92,8 @@ class Variable:
     def backward(self, retain_grad=False, create_graph=False):
         if self.grad is None:
             # self.grad = np.ones_like(self.data)
-            self.grad = Variable(np.ones_like(self.data))
+            xp = dezero.cuda.get_array_module(self.data)
+            self.grad = Variable(xp.ones_like(self.data))
 
         funcs = []
         seen_set = set()
@@ -120,11 +129,24 @@ class Variable:
                 for y in f.outputs:
                     y().grad = None     # y is weakref
 
+    def to_cpu(self):
+        if self.data is not None:
+            self.data = dezero.cuda.as_numpy(self.data)
 
-def as_array(y):
-    if np.isscalar(y):
-        return np.array(y)
-    return y
+    def to_gpu(self):
+        if self.data is not None:
+            self.data = dezero.cuda.as_cupy(self.data)
+
+
+def as_array(x):
+    if np.isscalar(x):
+        return np.array(x)
+    return x
+
+def as_array(x, array_module=np):
+    if np.isscalar(x):
+        return array_module.array(x)
+    return x
 
 def as_variable(obj):
     if isinstance(obj, Variable):

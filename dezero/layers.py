@@ -38,6 +38,14 @@ class Layer:
         for param in self.params():
             param.cleargrad()
 
+    def to_cpu(self):
+        for param in self.params():
+            param.to_cpu()
+
+    def to_gpu(self):
+        for param in self.params():
+            param.to_gpu()
+
 
 # layer.p1 = Parameter(np.array(1))
 # for name in layer._params:

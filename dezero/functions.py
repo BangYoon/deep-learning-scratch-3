@@ -6,7 +6,8 @@ from dezero.utils import sum_to
 
 class Sin(Function):
     def forward(self, x):
-        y = np.sin(x)
+        xp = cuda.get_array_module(x)
+        y = xp.sin(x)
         return y
     def backward(self, gy):
         # x = self.inputs[0].data
