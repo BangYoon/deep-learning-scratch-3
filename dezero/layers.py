@@ -8,7 +8,8 @@ class Layer:
     def __init__(self):
         self._params = set()
 
-    def __setattr__(self, name, value): #인스턴스 변수 설정 시 called
+    def __setattr__(self, name, value): #인스턴스 변수 설정 시 호출되는 특수 메서드
+        # 이름이 name인 인스턴스 변수에 값으로 value를 전달함 
         if isinstance(value, (Parameter, Layer)): # Parameter 은 Variable 상속
             self._params.add(name)
         super().__setattr__(name, value)

@@ -289,3 +289,22 @@ def accuracy(y,t):
     result = (pred==t.data)
     acc = result.mean()
     return Variable(as_array(acc))
+
+
+class ReLU(Function):
+    # h(x) = { x  (x>0)
+    #        { 0  (x<=0)
+    def forward(self, x):
+        y = np.maximum(x, 0.0)
+        return y
+
+    def backward(self, gy):
+        x, = self.inputs
+        mask = x.data > 0
+        # x의 0 보다 큰 값은 기울기 그대로 흘려보내고,
+        # 0 이하면 기울기 0 으로 설정해야함 
+        gx = gy * mask
+        return gx
+
+def relu(x):
+    return ReLU()(x)
