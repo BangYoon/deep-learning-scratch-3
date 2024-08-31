@@ -1,5 +1,5 @@
 import numpy as np
-from dezero.core import Function, Variable
+from dezero.core import Function, Variable, Config
 from dezero.core import as_variable, as_array
 from dezero import utils, cuda
 from dezero.utils import sum_to
@@ -309,3 +309,19 @@ class ReLU(Function):
 
 def relu(x):
     return ReLU()(x)
+
+
+def dropout(x, dropout_ratio=0.5):
+    x = as_variable(x)
+
+    if Config.train:
+        xp = cuda.get_array_module(x)
+        mask = np.random.rand(*x.shape) > dropout_ratio
+        scale = 1 - dropout_ratio
+        y = x * mask / scale
+        return y
+    else:
+        return x
+    
+
+
