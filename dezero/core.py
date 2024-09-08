@@ -69,6 +69,14 @@ class Variable:
 
     def transpose(self):
         return dezero.functions.transpose(self)
+    
+    def transpose(self, *axes):
+        if len(axes) == 0:
+            axes = None
+        elif len(axes) == 1:
+            if isinstance(axes[0], (tuple, list)) or axes[0] is None:
+                axes = axes[0]
+        return dezero.functions.transpose(self, axes)
 
     @property
     def T(self):
@@ -277,6 +285,10 @@ def setup_variable():
     Variable.__rtruediv__ = rdiv
     Variable.__pow__ = pow
 
+    Variable.matmaul = dezero.functions.matmul
+    Variable.dot = dezero.functions.matmul
+    Variable.max = dezero.functions.max
+    Variable.min = dezero.functions.min
 
 class Parameter(Variable):
     pass

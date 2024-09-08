@@ -24,5 +24,7 @@ else:
     from dezero.datasets import get_spiral
     from dezero.dataloaders import DataLoader
     import dezero.cuda 
+    import dezero.functions
+    import dezero.functions_conv
 
 setup_variable()
