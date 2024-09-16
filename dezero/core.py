@@ -149,6 +149,20 @@ class Variable:
         if self.data is not None:
             self.data = dezero.cuda.as_cupy(self.data)
 
+    def unchain(self):
+        self.creator = None
+
+    def unchain_backward(self): 
+    # 호출된 변수에서 시작해서 계산 그래프 거슬러 올라가며 모든 변수의 unchain 호출 
+        if self.creator is not None:
+            funcs = [self.creator]
+            while funcs:
+                f = funcs.pop()
+                for x in f.inputs:
+                    if x.creator is not None:
+                        funcs.append(x.creator)
+                        x.unchain()
+
 
 def as_array(x):
     if np.isscalar(x):
@@ -287,8 +301,8 @@ def setup_variable():
 
     Variable.matmaul = dezero.functions.matmul
     Variable.dot = dezero.functions.matmul
-    Variable.max = dezero.functions.max
-    Variable.min = dezero.functions.min
+    # Variable.max = dezero.functions.max
+    # Variable.min = dezero.functions.min
 
 class Parameter(Variable):
     pass
