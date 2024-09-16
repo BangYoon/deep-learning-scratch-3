@@ -172,3 +172,25 @@ class Con2d(Layer):
 
         y = F.conv2d_simple(x, self.W, self.b, self.stride, self.pad)
         return y
+    
+
+class RNN(Layer):
+    def __init__(self, hidden_size, in_size=None): # in_size=None 이면 은닉 크기만 정해놓고, 입력 크기는 들어오는 데이터에 따라 자동 구현하겠다는 뜻.
+        super().__init__()
+        self.x2h = Linear(hidden_size, in_size=in_size)              # x2h : 입력 x에서 은닉 상태 h로 변환하는 완전연결계층.
+        self.h2h = Linear(hidden_size, in_size=in_size, nobias=True) # h2h : 이전 은닉 상태에서 다음 은닉 상태로 변환하는 완전연결계층. RNN 편향 하나이므로 애는 nobias
+        self.h = None
+
+    def reset_state(self):
+        self.h = None
+
+    def forward(self, x):
+        if self.h is None:
+            h_new = F.tanh(self.x2h(x))
+        else:
+            h_new = F.tanh(self.x2h(x) + self.h2h(self.h))
+
+        self.h = h_new
+        return h_new
+    
+
